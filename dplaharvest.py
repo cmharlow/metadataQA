@@ -86,12 +86,10 @@ if __name__ == "__main__":
             print "Retrieving page %d of %d" % (p, dplaPageCount)
 
         dataDict = {}
-        dataDict['docs'] = recordList
+        dataDict['docs'] = recordlist
 
         ofile = open(args.filename, 'w')
         json.dump(dataDict, ofile)
         ofile.close()
 
         print "Wrote out %d records" % recordCount
-
-
