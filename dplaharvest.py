@@ -8,19 +8,19 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
 
-    parser.add_argument("-o", "--filename", dest="filename", \
+    parser.add_argument("-o", "--filename", dest="filename",
                         help="write repository to file", default="DPLAoutput.json")
-    parser.add_argument("-k", "--apikey", dest="apikey", \
+    parser.add_argument("-k", "--apikey", dest="apikey",
                         help="your unique DPLA API key")
-    parser.add_argument("-a", "--after", dest="afterDate", \
+    parser.add_argument("-a", "--after", dest="afterDate",
                         help="items with creation date after yyyy-mm-dd")
-    parser.add_argument("-f", "--before", dest="beforeDate", \
+    parser.add_argument("-f", "--before", dest="beforeDate",
                         help="items with creation date before yyyy-mm-dd")
-    parser.add_argument("-t", "--title", dest="title", \
+    parser.add_argument("-t", "--title", dest="title",
                         help="search the item title")
-    parser.add_argument("-q", "--keyword", dest="keyword", \
+    parser.add_argument("-q", "--keyword", dest="keyword",
                         help="keywork search")
-    parser.add_argument("-p", "--provider", dest="provider", \
+    parser.add_argument("-p", "--provider", dest="provider",
                         help="specify the metadata provider")
 
     args = parser.parse_args()

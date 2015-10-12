@@ -48,18 +48,18 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
 
-    parser.add_argument("-l", "--link", dest="link", \
-                        help="URL of repository", \
+    parser.add_argument("-l", "--link", dest="link",
+                        help="URL of repository",
                         default="http://digital.lib.utk.edu/collections/oai2")
-    parser.add_argument("-o", "--filename", dest="filename", \
+    parser.add_argument("-o", "--filename", dest="filename",
                         help="write repository to file", default="output.xml")
-    parser.add_argument("-f", "--from", dest="fromDate", \
+    parser.add_argument("-f", "--from", dest="fromDate",
                         help="harvest records from this date yyyy-mm-dd")
-    parser.add_argument("-u", "--until", dest="until", \
+    parser.add_argument("-u", "--until", dest="until",
                         help="harvest records until this date yyyy-mm-dd")
-    parser.add_argument("-m", "--mdprefix", dest="mdprefix", \
+    parser.add_argument("-m", "--mdprefix", dest="mdprefix",
                         default="oai_dc", help="use the specified metadata format")
-    parser.add_argument("-s", "--setName", dest="setName", \
+    parser.add_argument("-s", "--setName", dest="setName",
                         help="harvest the specified set")
 
     args = parser.parse_args()
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ \
         http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"> \
         <responseDate>2015-10-11T00:35:52Z</responseDate> \
-        <request>' + args.link + '?ListRecords' + verbOpts + \
+        <request>' + urllib2.urlencode(args.link) + '?ListRecords' + verbOpts + \
         '</request><ListRecords>\n')  # wrap list of records with this
 
     data = getFile(args.link, 'ListRecords' + verbOpts)
