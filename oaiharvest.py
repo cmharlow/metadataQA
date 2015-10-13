@@ -1,4 +1,5 @@
 import urllib2
+import urllib
 import zlib
 import time
 import re
@@ -48,19 +49,12 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
 
-    parser.add_argument("-l", "--link", dest="link",
-                        help="URL of repository",
-                        default="http://digital.lib.utk.edu/collections/oai2")
-    parser.add_argument("-o", "--filename", dest="filename",
-                        help="write repository to file", default="output.xml")
-    parser.add_argument("-f", "--from", dest="fromDate",
-                        help="harvest records from this date yyyy-mm-dd")
-    parser.add_argument("-u", "--until", dest="until",
-                        help="harvest records until this date yyyy-mm-dd")
-    parser.add_argument("-m", "--mdprefix", dest="mdprefix",
-                        default="oai_dc", help="use the specified metadata format")
-    parser.add_argument("-s", "--setName", dest="setName",
-                        help="harvest the specified set")
+    parser.add_argument("-l", "--link", dest="link", help="URL of repository", default="http://digital.lib.utk.edu/collections/oai2")
+    parser.add_argument("-o", "--filename", dest="filename", help="write repository to file", default="output.xml")
+    parser.add_argument("-f", "--from", dest="fromDate", help="harvest records from this date yyyy-mm-dd")
+    parser.add_argument("-u", "--until", dest="until", help="harvest records until this date yyyy-mm-dd")
+    parser.add_argument("-m", "--mdprefix", dest="mdprefix", default="oai_dc", help="use the specified metadata format")
+    parser.add_argument("-s", "--setName", dest="setName", help="harvest the specified set")
 
     args = parser.parse_args()
 
@@ -83,14 +77,7 @@ if __name__ == "__main__":
 
     ofile = codecs.lookup('utf-8')[-1](file(args.filename, 'wb'))
 
-    ofile.write('<?xml version="1.0" encoding="UTF-8"?> \
-        <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" \
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
-        xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ \
-        http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"> \
-        <responseDate>2015-10-11T00:35:52Z</responseDate> \
-        <request>' + urllib2.urlencode(args.link) + '?ListRecords' + verbOpts + \
-        '</request><ListRecords>\n')  # wrap list of records with this
+    ofile.write('<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"> <responseDate>2015-10-11T00:35:52Z</responseDate> <ListRecords>\n')
 
     data = getFile(args.link, 'ListRecords' + verbOpts)
 
