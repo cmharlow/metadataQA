@@ -15,6 +15,7 @@ class RepoInvestigatorException(Exception):
 
 OAI_NAMESPACE = "{http://www.openarchives.org/OAI/2.0/}"
 MODS_NAMESPACE = "{http://www.loc.gov/mods/v3}"
+namespaces = {"mods": 'http://www.loc.gov/mods/v3', "oai": 'http://www.openarchives.org/OAI/2.0/'}
 
 class Record:
     """Base class for a MODS or nested metadata record in an OAI-PMH
@@ -42,6 +43,18 @@ class Record:
             for desc in metadata.iterdescendants():
                 if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
                     out.append(desc.text.encode("utf-8").strip())
+            if len(out) == 0:
+                out = None
+            self.elements = out
+            return self.elements
+
+    def get_xpath(self):
+        out = []
+        metadata = self.elem.find("oai:metadata/mods:mods", namespaces=namespaces)
+        if metadata != None:
+            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
+                for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
+                    out.append(value.text.encode("utf-8").strip())
             if len(out) == 0:
                 out = None
             self.elements = out
@@ -182,6 +195,7 @@ def main():
 
     parser = ArgumentParser(usage='%(prog)s [options] data_filename.xml')
     parser.add_argument("-e", "--element", dest="element", help="element to print to screen")
+    parser.add_argument("-x", "--xpath", dest="xpath", help="get response of xpath expression on mods:mods record")
     parser.add_argument("-i", "--id", action="store_true", dest="id", default=False, help="prepend meta_id to line")
     parser.add_argument("-s", "--stats", action="store_true", dest="stats", default=False, help="only print stats for repository")
     parser.add_argument("-p", "--present", action="store_true", dest="present", default=False, help="print if there is value of defined element in record")
@@ -193,7 +207,7 @@ def main():
         parser.print_help()
         exit()
 
-    if args.element is None:
+    if args.element is None and args.xpath is None:
         args.stats = True
 
     s = 0
@@ -202,9 +216,17 @@ def main():
             r = Record(elem, args)
             record_id = r.get_record_id()
 
-            if args.stats is False and args.present is False:
+            if args.stats is False and args.present is False and args.element is not None:
                 if r.get_record_status() != "deleted" and r.get_elements() is not None:
                     for i in r.get_elements():
+                        if args.id:
+                            print "\t".join([record_id, i])
+                        else:
+                            print i
+
+            if args.stats is False and args.present is False and args.xpath is not None:
+                if r.get_record_status() != "deleted" and r.get_xpath() is not None:
+                    for i in r.get_xpath():
                         if args.id:
                             print "\t".join([record_id, i])
                         else:
