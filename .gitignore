@@ -1,1 +1,4 @@
 test/
+*.pyc
+*.log
+marc_analysis.py
