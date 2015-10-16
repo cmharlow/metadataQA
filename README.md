@@ -1,6 +1,7 @@
 # metadataQA
 
 A set of metadata harvesting and analysis scripts, largely built off the model/skeleton of Mark Phillips' wonderful work: 
+
 - [pyoaiharvester](https://github.com/vphill/pyoaiharvester)
 - [metadata_breakers](https://github.com/vphill/metadata_breakers)
 - [Metadata Analysis at the Command Line](http://journal.code4lib.org/articles/7818)
@@ -18,11 +19,12 @@ As such, these scripts are rather haphazard and very, very alpha. In particular 
 Because these scripts use new libraries*, and they change the original intent of the Phillip's work (working with nested XML, working with DPLA API and DPLA Json, eventually will share working with MARC via Pymarc), these are a new repo. I'd like to eventually pull these bits and pieces of helpful scripts together in a more coherent fashion for library metadata harvest and review; see the 'to be enhanced' section below.
 
 *Some, not all, changes include:
-    - argparse instead of optparse to avoid depreciated libraries
-    - lxml.etree instead of elementtree alone to support better xpath queries for nested elements (MODS)
-    - rewritten for working with json for DPLA data
-    - adding support for DPLA analysis tool to find fields according to ObjectPath syntax
-    - adding support for MODS analysis tool to find elements according to XPath syntax
+
+- argparse instead of optparse to avoid depreciated libraries
+- lxml.etree instead of elementtree alone to support better xpath queries for nested elements (MODS)
+- rewritten for working with json for DPLA data
+- adding support for DPLA analysis tool to find fields according to ObjectPath syntax
+- adding support for MODS analysis tool to find elements according to XPath syntax
 
 ## Install
 
@@ -31,16 +33,16 @@ This was all built/test on python 2.7.10. It needs tweaking for python 3. I'm wo
 So, working with python 2.7:
 
 1. Get this repository on your computer somehow. You can:
-    a. change to file location where you want these scripts, then clone this git repository to your computer:
+    1. change to file location where you want these scripts, then clone this git repository to your computer:
     ```
     $ git clone https://github.com/cmh2166/metadataQA.git
     ```
-    b. download this repository to your computer from the [GitHub page](https://github.com/cmh2166/metadataQA) - use the 'Download Zip' button in bottom right corner. Move the zip file to the place you wish to have these scripts, then unzip.
+    1. download this repository to your computer from the [GitHub page](https://github.com/cmh2166/metadataQA) - use the 'Download Zip' button in bottom right corner. Move the zip file to the place you wish to have these scripts, then unzip.
 2. once you've got the scripts on your computer, change to inside the metadataQA directory, and install the requirements: 
 ```
 $ pip install -r requirements.txt 
 ```
-2. now you should be ready to use the scripts.
+3. now you should be ready to use the scripts.
 
 ## Examples
 
