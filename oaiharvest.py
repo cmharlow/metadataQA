@@ -16,19 +16,19 @@ def getFile(link, command, verbose=1, sleepTime=0):
         time.sleep(sleepTime)
     remoteAddr = link + '?verb=%s' % command
     if verbose:
-        print "\r", "getFile ...'%s'" % remoteAddr[-90:]
+        print("\r", "getFile ...'%s'" % remoteAddr[-90:])
     headers = {'User-Agent': 'OAIHarvester/2.0', 'Accept': 'text/html',
                'Accept-Encoding': 'compress, deflate'}
     try:
         remoteData = urllib2.urlopen(remoteAddr).read()
-    except urllib2.HTTPError, exValue:
+    except(urllib2.HTTPError, exValue):
         if exValue.code == 503:
             retryWait = int(exValue.hdrs.get("Retry-After", "-1"))
             if retryWait < 0:
                 return None
-            print 'Waiting %d seconds' % retryWait
+            print('Waiting %d seconds' % retryWait)
             return getFile(link, command, 0, retryWait)
-        print exValue
+        print(exValue)
         if nRecoveries < maxRecoveries:
             nRecoveries += 1
             return getFile(link, command, 1, 60)
@@ -41,7 +41,7 @@ def getFile(link, command, verbose=1, sleepTime=0):
     nDataBytes += len(remoteData)
     mo = re.search('<error *code=\"([^"]*)">(.*)</error>', remoteData)
     if mo:
-        print "OAIERROR: code=%s '%s'" % (mo.group(1), mo.group(2))
+        print("OAIERROR: code=%s '%s'" % (mo.group(1), mo.group(2)))
     else:
         return remoteData
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     if not args.link.startswith('http'):
         args.link = 'http://' + args.link
 
-    print "Writing records to %s from repository %s" % (args.filename, args.link)
+    print("Writing records to %s from repository %s" % (args.filename, args.link))
 
     verbOpts = ''
     if args.setName:
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     if args.mdprefix:
         verbOpts += '&metadataPrefix=%s' % args.mdprefix
 
-    print "Using url:%s" % args.link + '?ListRecords' + verbOpts
+    print("Using url:%s" % args.link + '?ListRecords' + verbOpts)
 
     ofile = codecs.lookup('utf-8')[-1](file(args.filename, 'wb'))
 
@@ -97,6 +97,6 @@ if __name__ == "__main__":
 
     ofile.write('\n</ListRecords></OAI-PMH>\n'), ofile.close()
 
-    print "\nRead %d bytes (%.2f compression)" % (nDataBytes, float(nDataBytes) / nRawBytes)
+    print("\nRead %d bytes (%.2f compression)" % (nDataBytes, float(nDataBytes) / nRawBytes))
 
-    print "Wrote out %d records" % recordCount
+    print("Wrote out %d records" % recordCount)
