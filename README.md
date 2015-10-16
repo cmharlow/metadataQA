@@ -56,6 +56,7 @@ This all works at present by using the harvest scripts to get a data file to you
 Note: **This script at present is set to default to pulling MODS from the UTK Islandora OAI feed and save to a 'output.xml' file.**
 
 usage: python oaiharvest.py [options, see below] -l link to OAI feed -o file to save to.
+
 optional arguments:
 
 - -h: a help message
@@ -76,16 +77,17 @@ $ python oaiharvest.py -m mods -o fsuoai.mods.xml -l https://fsu.digital.flvc.or
 You can pass your [DPLA API key](http://dp.la/info/developers/codex/policies/#get-a-key) to the script either using the -k flag or by setting it as an environmental variable DPLA_APIKEY.
 
 usage: python dplaharvest.py [options, see below] -o file to save data to
+
 optional arguments:
 
-  -h: show a help message
-  -o: file to write the data to
-  -k: your unique DPLA API key
-  -a: items with creation date after yyyy-mm-dd
-  -f: items with creation date before yyyy-mm-dd
-  -t: search these keywords in the items' titles
-  -q: general keyword search
-  -p: specify the metadata provider
+- -h: show a help message
+- -o: file to write the data to
+- -k: your unique DPLA API key
+- -a: items with creation date after yyyy-mm-dd
+- -f: items with creation date before yyyy-mm-dd
+- -t: search these keywords in the items' titles
+- -q: general keyword search
+- -p: specify the metadata provider
 
 This downloads all the DPLA data that has a creation date after 2020
 ```
@@ -103,15 +105,17 @@ Works most similarly to the original script created by Mark Phillips.
 usage: oaidc_analysis.py data_filename.xml [options, see below]
 
 positional arguments:
-  datafile              put the datafile you want analyzed here
+
+- datafile              put the datafile you want analyzed here
 
 optional arguments:
-  -h: show a help message
-  -e: element to print to screen
-  -i: prepend meta_id/oai header id for record to line
-  -s: only print stats for repository (default)
-  -p: print if there is value of defined element in record
-  -d: Dump all record data to a tab delimited format (*this has not been tested*)
+
+- -h: show a help message
+- -e: element to print to screen
+- -i: prepend meta_id/oai header id for record to line
+- -s: only print stats for repository (default)
+- -p: print if there is value of defined element in record
+- -d: Dump all record data to a tab delimited format (*this has not been tested*)
 
 To get a field report:
 ```
@@ -135,15 +139,17 @@ This has added support for reviewing nested MODS elements, as well as perform qu
 usage: oaimods_analysis.py data_filename.xml [options, see below]
 
 positional arguments:
-  datafile              put the datafile you want analyzed here
+
+- datafile              put the datafile you want analyzed here
 
 optional arguments:
-  -h: show a help message
-  -e: MODS element to print to screen
-  -x: get response of XPath expression on mods:mods record
-  -i: prepend meta_id, oai header id for record to line
-  -s: only print stats for repository (default)
-  -p: print if there is value of defined element in record
+
+- -h: show a help message
+- -e: MODS element to print to screen
+- -x: get response of XPath expression on mods:mods record
+- -i: prepend meta_id, oai header id for record to line
+- -s: only print stats for repository (default)
+- -p: print if there is value of defined element in record
 
 To print a field report:
 ```
