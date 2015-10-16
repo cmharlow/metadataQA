@@ -42,7 +42,8 @@ So, working with python 2.7:
 ```
 $ pip install -r requirements.txt 
 ```
-3. now you should be ready to use the scripts.
+
+Now you should be ready to use the scripts.
 
 ## Examples
 
@@ -56,13 +57,14 @@ Note: **This script at present is set to default to pulling MODS from the UTK Is
 
 usage: python oaiharvest.py [options, see below] -l link to OAI feed -o file to save to.
 optional arguments:
-  -h: a help message
-  -l: URL of OAI repository
-  -o: write repository to this file
-  -f: harvest records from this date yyyy-mm-dd
-  -u: harvest records until this date yyyy-mm-dd
-  -m: use the specified metadata format
-  -s: harvest the specified set
+
+- -h: a help message
+- -l: URL of OAI repository
+- -o: write repository to this file
+- -f: harvest records from this date yyyy-mm-dd
+- -u: harvest records until this date yyyy-mm-dd
+- -m: use the specified metadata format
+- -s: harvest the specified set
 
 This downloads all the MODS/XML data from the OAI feed at Florida State University, and saves it to the file 'fsuoai.mods.xml'.
 ```
@@ -75,6 +77,7 @@ You can pass your [DPLA API key](http://dp.la/info/developers/codex/policies/#ge
 
 usage: python dplaharvest.py [options, see below] -o file to save data to
 optional arguments:
+
   -h: show a help message
   -o: file to write the data to
   -k: your unique DPLA API key
