@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--title", dest="title", help="search the item title")
     parser.add_argument("-q", "--keyword", dest="keyword", help="keywork search")
     parser.add_argument("-p", "--provider", dest="provider", help="specify the metadata provider, i.e., local institution")
-    parser.add_argument("-h", "--hub", dest="hub", help="specify the service or content hub")
+    parser.add_argument("-u", "--hub", dest="hub", help="specify the service or content hub")
 
     args = parser.parse_args()
 
