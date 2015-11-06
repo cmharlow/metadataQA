@@ -8,20 +8,14 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
 
-    parser.add_argument("-o", "--filename", dest="filename",
-                        help="write repository to file", default="DPLAoutput.json")
-    parser.add_argument("-k", "--apikey", dest="apikey",
-                        help="your unique DPLA API key")
-    parser.add_argument("-a", "--after", dest="afterDate",
-                        help="items with creation date after yyyy-mm-dd")
-    parser.add_argument("-f", "--before", dest="beforeDate",
-                        help="items with creation date before yyyy-mm-dd")
-    parser.add_argument("-t", "--title", dest="title",
-                        help="search the item title")
-    parser.add_argument("-q", "--keyword", dest="keyword",
-                        help="keywork search")
-    parser.add_argument("-p", "--provider", dest="provider",
-                        help="specify the metadata provider")
+    parser.add_argument("-o", "--filename", dest="filename", help="write repository to file", default="DPLAoutput.json")
+    parser.add_argument("-k", "--apikey", dest="apikey", help="your unique DPLA API key")
+    parser.add_argument("-a", "--after", dest="afterDate", help="items with creation date after yyyy-mm-dd")
+    parser.add_argument("-f", "--before", dest="beforeDate", help="items with creation date before yyyy-mm-dd")
+    parser.add_argument("-t", "--title", dest="title", help="search the item title")
+    parser.add_argument("-q", "--keyword", dest="keyword", help="keywork search")
+    parser.add_argument("-p", "--provider", dest="provider", help="specify the metadata provider, i.e., local institution")
+    parser.add_argument("-u", "--hub", dest="hub", help="specify the service or content hub")
 
     args = parser.parse_args()
 
@@ -44,6 +38,8 @@ if __name__ == "__main__":
     verbOpts = ''
     if args.provider:
         verbOpts += '&dataProvider=%s' % args.provider
+    if args.hub:
+        verbOpts += '&provider.name=%s' % args.hub
     if args.afterDate:
         verbOpts += '&sourceResource.date.after=%s' % args.afterDate
     if args.beforeDate:
@@ -54,7 +50,7 @@ if __name__ == "__main__":
         verbOpts += '&q=%s' % args.keyword
 
     if verbOpts == '':
-        print "Stop it. You don't need really need the full DPLA metadata set. \
+        print "Stop it. You don't really need the full DPLA metadata set. \
         \nSpecify a query parameter."
         parser.print_help()
     else:
