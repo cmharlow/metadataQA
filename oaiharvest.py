@@ -4,6 +4,7 @@ import zlib
 import time
 import re
 import xml.dom.pulldom
+import xml.dom.minidom
 import operator
 import codecs
 from argparse import ArgumentParser
@@ -81,19 +82,29 @@ if __name__ == "__main__":
 
     data = getFile(args.link, 'ListRecords' + verbOpts)
 
+    # from http://boodebr.org/main/python/all-about-python-and-unicode#UNI_XML
+    RE_XML_ILLEGAL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
+                     u'|' + \
+                     u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
+                      (unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
+                       unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
+                       unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff))
+    dataClean = re.sub(RE_XML_ILLEGAL, "?", data)
+
     recordCount = 0
 
-    while data:
-        events = xml.dom.pulldom.parseString(data)
+    while dataClean:
+        events = xml.dom.pulldom.parseString(dataClean)
         for (event, node) in events:
             if event == "START_ELEMENT" and node.tagName == 'record':
                 events.expandNode(node)
                 node.writexml(ofile)
                 recordCount += 1
-        more = re.search('<resumptionToken[^>]*>(.*)</resumptionToken>', data)
+        more = re.search('<resumptionToken[^>]*>(.*)</resumptionToken>', dataClean)
         if not more:
             break
         data = getFile(args.link, "ListRecords&resumptionToken=%s" % more.group(1))
+        dataClean = re.sub(RE_XML_ILLEGAL, "?", data)
 
     ofile.write('\n</ListRecords></OAI-PMH>\n'), ofile.close()
 
