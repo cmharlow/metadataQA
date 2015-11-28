@@ -54,7 +54,8 @@ class Record:
         if metadata != None:
             if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
                 for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    out.append(value.text.encode("utf-8").strip())
+                    if value.text != None:
+                        out.append(value.text.encode("utf-8").strip())
             if len(out) == 0:
                 out = None
             self.elements = out
@@ -80,6 +81,17 @@ class Record:
                 if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
                     present = True
                     return present
+
+    def has_xpath(self):
+        out = []
+        present = False
+        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
+        if metadata != None:
+            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
+                for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
+                    if value.text != None:
+                        present = True
+                        return present
 
 def collect_stats(stats_aggregate, stats):
     #increment the record counter
@@ -232,9 +244,13 @@ def main():
                         else:
                             print(i)
 
-            if args.stats is False and args.present is True:
+            if args.stats is False and args.element is not None and args.present is True:
                 if r.get_record_status() != "deleted":
                     print("%s %s" % (record_id, r.has_element()))
+
+            if args.stats is False and args.xpath is not None and args.present is True:
+                if r.get_record_status() != "deleted":
+                    print("%s %s" % (record_id, r.has_xpath()))
 
             if args.stats is True and args.element is None:
                 if (s % 1000) == 0 and s != 0:
