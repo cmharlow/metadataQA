@@ -1,4 +1,4 @@
-# metadataQA
+#metadataQA
 
 A set of metadata harvesting and analysis scripts, largely built off the model/skeleton of Mark Phillips' wonderful work: 
 
