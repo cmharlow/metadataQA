@@ -8,7 +8,7 @@ A set of metadata harvesting and analysis scripts, largely built off the model/s
 
 So please give any gratitude for these scripts to Mark Phillips, and any complaints to Christina.
 
-## Warning
+##Warning
 
 A forthcoming presentation somewhat prompted me to finally collect and share these - the presentation will be linked here, along with accompanying blog post with thoughts on library metadata QA. However, they were built usually at midnight with huge metadata projects/migrations looming where I didn't have the tools I needed to properly review metadata for my work.
 
