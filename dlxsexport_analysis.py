@@ -53,8 +53,8 @@ class Record:
         record = etree.ElementTree(self.elem)
         for desc in self.elem.iterdescendants():
             if len(desc) == False and desc.text != None: #ignore empties, does NOT have children elements
-                stats.setdefault(re.sub('\[\d+\]','', record.getelementpath(desc)), 0)
-                stats[re.sub('\[\d+\]','', record.getelementpath(desc))] += 1
+                stats.setdefault(re.sub('\[\d+\]','', record.getpath(desc)), 0)
+                stats[re.sub('\[\d+\]','', record.getpath(desc))] += 1
         return stats
 
     def has_element(self):
@@ -104,42 +104,6 @@ def create_stats_averages(stats_aggregate):
     return stats_aggregate
 
 
-def calc_completeness(stats_averages):
-    completeness = {}
-    record_count = stats_averages["record_count"]
-    completeness_total = 0
-    wwww_total = 0
-    collection_total = 0
-    collection_field_to_count = 0
-
-    wwww = [
-        'FILEDESC/SOURCEDESC/BIBL/AUTHOR',       # who
-        'FILEDESC/SOURCEDESC/BIBL/TITLE',         # what
-        'FILEDESC/SOURCEDESC/BIBL/DATE'           # when
-    ]
-
-    populated_elements = len(stats_averages["field_info"])
-    for element in sorted(stats_averages["field_info"]):
-            element_completeness_percent = 0
-            element_completeness_percent = ((stats_averages["field_info"][element]["field_count"]
-                                             / float(record_count)) * 100)
-            completeness_total += element_completeness_percent
-
-            #gather collection completeness
-            if element_completeness_percent > 10:
-                collection_total += element_completeness_percent
-                collection_field_to_count += 1
-            #gather wwww completeness
-            if element in wwww:
-                wwww_total += element_completeness_percent
-
-    completeness["collection_completeness"] = collection_total / float(collection_field_to_count)
-    completeness["wwww_completeness"] = wwww_total / float(len(wwww))
-    completeness["average_completeness"] = (completeness["collection_completeness"] +
-                                             completeness["wwww_completeness"] / float(4))
-    return completeness
-
-
 def pretty_print_stats(stats_averages):
     record_count = stats_averages["record_count"]
     #get header length
@@ -160,11 +124,6 @@ def pretty_print_stats(stats_averages):
                     record_count,
                     percent
                 ))
-
-    print("\n")
-    completeness = calc_completeness(stats_averages)
-    for i in ["collection_completeness", "wwww_completeness", "average_completeness"]:
-        print("%23s %f" % (i, completeness[i]))
 
 
 def main():
