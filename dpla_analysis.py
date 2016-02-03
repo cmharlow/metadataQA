@@ -6,6 +6,7 @@ import json
 import objectpath
 import re
 
+
 class RepoInvestigatorException(Exception):
     """This is our base exception for this script"""
     def __init__(self, value):
@@ -13,6 +14,7 @@ class RepoInvestigatorException(Exception):
 
     def __str__(self):
         return "%s" % (self.value,)
+
 
 class Record:
     """Base class for a metadata record/object"""

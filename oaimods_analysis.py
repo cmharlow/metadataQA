@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from lxml import etree
 import re
 
+
 class RepoInvestigatorException(Exception):
     """This is our base exception for this script"""
     def __init__(self, value):
@@ -15,7 +16,9 @@ class RepoInvestigatorException(Exception):
 
 OAI_NAMESPACE = "{http://www.openarchives.org/OAI/2.0/}"
 MODS_NAMESPACE = "{http://www.loc.gov/mods/v3}"
-namespaces = {"mods": 'http://www.loc.gov/mods/v3', "oai": 'http://www.openarchives.org/OAI/2.0/'}
+namespaces = {"mods": 'http://www.loc.gov/mods/v3',
+              "oai": 'http://www.openarchives.org/OAI/2.0/'}
+
 
 class Record:
     """Base class for a MODS or nested metadata record in an OAI-PMH
@@ -92,6 +95,7 @@ class Record:
                     if value.text != None:
                         present = True
                         return present
+
 
 def collect_stats(stats_aggregate, stats):
     #increment the record counter
@@ -203,7 +207,6 @@ def main():
         "record_count": 0,
         "field_info": {}
     }
-    element_stats_aggregate = {}
 
     parser = ArgumentParser(usage='%(prog)s [options] data_filename.xml')
     parser.add_argument("-e", "--element", dest="element", help="element to print to screen")
@@ -217,7 +220,7 @@ def main():
 
     if not len(sys.argv) > 0:
         parser.print_help()
-        exit()
+        parser.exit()
 
     if args.element is None and args.xpath is None:
         args.stats = True

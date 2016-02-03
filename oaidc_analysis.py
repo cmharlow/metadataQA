@@ -68,7 +68,6 @@ class Record:
             return stats
 
     def has_element(self):
-        out = []
         elements = self.elem[1][0].findall(DC_NAMESPACE + self.args.element)
         for element in elements:
             if element.text:
