@@ -1,6 +1,6 @@
 #metadataQA
 
-A set of metadata harvesting and analysis scripts, largely built off the model/skeleton of Mark Phillips' wonderful work: 
+A set of metadata harvesting and analysis scripts, largely built off the model/skeleton of Mark Phillips' wonderful work:
 
 - [pyoaiharvester](https://github.com/vphill/pyoaiharvester)
 - [metadata_breakers](https://github.com/vphill/metadata_breakers)
@@ -20,7 +20,7 @@ Because these scripts use new libraries*, and they change the original intent of
 
 *Some, not all, changes include:
 
-- argparse instead of optparse to avoid depreciated libraries
+- argparse instead of optparse to avoid deprecated libraries
 - lxml.etree instead of elementtree alone to support better xpath queries for nested elements (MODS)
 - rewritten for working with json for DPLA data
 - adding support for DPLA analysis tool to find fields according to ObjectPath syntax
@@ -38,9 +38,9 @@ So, working with python 2.7:
     $ git clone https://github.com/cmh2166/metadataQA.git
     ```
     1. download this repository to your computer from the [GitHub page](https://github.com/cmh2166/metadataQA) - use the 'Download Zip' button in bottom right corner. Move the zip file to the place you wish to have these scripts, then unzip.
-2. once you've got the scripts on your computer, change to inside the metadataQA directory, and install the requirements: 
+2. once you've got the scripts on your computer, change to inside the metadataQA directory, and install the requirements:
 ```
-$ pip install -r requirements.txt 
+$ pip install -r requirements.txt
 ```
 
 Now you should be ready to use the scripts.
@@ -91,7 +91,7 @@ optional arguments:
 
 This downloads all the DPLA data that has a creation date after 2020
 ```
-$ python dplaharvest.py -k YourLongAPIKey -a 2020 -o FileToSaveDataTo.json 
+$ python dplaharvest.py -k YourLongAPIKey -a 2020 -o FileToSaveDataTo.json
 ```
 
 ### Analysis
@@ -100,7 +100,7 @@ All of the analysis scripts run similarly to what is described by Mark Phillips 
 
 #### oai dc analysis
 
-Works most similarly to the original script created by Mark Phillips. 
+Works most similarly to the original script created by Mark Phillips.
 
 usage: oaidc_analysis.py data_filename.xml [options, see below]
 
@@ -119,7 +119,7 @@ optional arguments:
 
 To get a field report:
 ```
-$ python oaidc_analysis.py test/output.dc.xml 
+$ python oaidc_analysis.py test/output.dc.xml
 ```
 
 To get all the values for the dc:creator field:
@@ -153,12 +153,12 @@ optional arguments:
 
 To print a field report:
 ```
-python oaimods_analysis.py test/DLTNphase1.mods.xml 
+python oaimods_analysis.py test/DLTNphase1.mods.xml
 ```
 
 To get all the values for mods:title (this does not mean just top level mods:titleInfo/mods:title - but any mods:title element wherever it appears in the record):
 ```
-python oaimods_analysis.py test/DLTNphase1.mods.xml -e title 
+python oaimods_analysis.py test/DLTNphase1.mods.xml -e title
 ```
 
 To get all the unique values for mods:form (again, wherever it appears) sorted by count:
@@ -182,5 +182,3 @@ To be written up.
 ## To Be Enhanced
 
 To be written up.
-
-
