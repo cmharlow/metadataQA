@@ -1,15 +1,14 @@
 import urllib2
-import urllib
 import zlib
 import time
 import re
 import xml.dom.pulldom
 import xml.dom.minidom
-import operator
 import codecs
 from argparse import ArgumentParser
 
 nDataBytes, nRawBytes, nRecoveries, maxRecoveries = 0, 0, 0, 3
+
 
 def getFile(link, command, verbose=1, sleepTime=0):
     global nRecoveries, nDataBytes, nRawBytes
@@ -46,6 +45,7 @@ def getFile(link, command, verbose=1, sleepTime=0):
     else:
         return remoteData
 
+
 if __name__ == "__main__":
 
     parser = ArgumentParser()
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     ofile = codecs.lookup('utf-8')[-1](file(args.filename, 'wb'))
 
-    ofile.write('<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"> <responseDate>2015-10-11T00:35:52Z</responseDate> <ListRecords>\n')
+    ofile.write('<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"> <ListRecords>\n')
 
     data = getFile(args.link, 'ListRecords' + verbOpts)
 
