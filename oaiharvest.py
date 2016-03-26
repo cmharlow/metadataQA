@@ -17,11 +17,9 @@ def getFile(link, command, verbose=1, sleepTime=0):
     remoteAddr = link + '?verb=%s' % command
     if verbose:
         print("\r", "getFile ...'%s'" % remoteAddr[-90:])
-    headers = {'User-Agent': 'OAIHarvester/2.0', 'Accept': 'text/html',
-               'Accept-Encoding': 'compress, deflate'}
     try:
         remoteData = urllib2.urlopen(remoteAddr).read()
-    except(urllib2.HTTPError, exValue):
+    except urllib2.HTTPError as exValue:
         if exValue.code == 503:
             retryWait = int(exValue.hdrs.get("Retry-After", "-1"))
             if retryWait < 0:
@@ -50,12 +48,17 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
 
-    parser.add_argument("-l", "--link", dest="link", help="URL of repository", default="http://digital.lib.utk.edu/collections/oai2")
-    parser.add_argument("-o", "--filename", dest="filename", help="write repository to file", default="output.xml")
-    parser.add_argument("-f", "--from", dest="fromDate", help="harvest records from this date yyyy-mm-dd")
-    parser.add_argument("-u", "--until", dest="until", help="harvest records until this date yyyy-mm-dd")
-    parser.add_argument("-m", "--mdprefix", dest="mdprefix", default="oai_dc", help="use the specified metadata format")
-    parser.add_argument("-s", "--setName", dest="setName", help="harvest the specified set")
+    parser.add_argument("-l", "--link", dest="link", help="URL of repository")
+    parser.add_argument("-o", "--filename", dest="filename",
+                        help="write repository to file", default="output.xml")
+    parser.add_argument("-f", "--from", dest="fromDate",
+                        help="harvest records from this date yyyy-mm-dd")
+    parser.add_argument("-u", "--until", dest="until",
+                        help="harvest records until this date yyyy-mm-dd")
+    parser.add_argument("-m", "--mdprefix", dest="mdprefix", default="oai_dc",
+                        help="use the specified metadata format")
+    parser.add_argument("-s", "--setName", dest="setName",
+                        help="harvest the specified set")
 
     args = parser.parse_args()
 
@@ -78,7 +81,7 @@ if __name__ == "__main__":
 
     ofile = codecs.lookup('utf-8')[-1](file(args.filename, 'wb'))
 
-    ofile.write('<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"> <ListRecords>\n')
+    ofile.write('<ListRecords>\n')
 
     data = getFile(args.link, 'ListRecords' + verbOpts)
 
@@ -106,7 +109,7 @@ if __name__ == "__main__":
         data = getFile(args.link, "ListRecords&resumptionToken=%s" % more.group(1))
         dataClean = re.sub(RE_XML_ILLEGAL, "?", data)
 
-    ofile.write('\n</ListRecords></OAI-PMH>\n'), ofile.close()
+    ofile.write('\n</ListRecords>\n'), ofile.close()
 
     print("\nRead %d bytes (%.2f compression)" % (nDataBytes, float(nDataBytes) / nRawBytes))
 

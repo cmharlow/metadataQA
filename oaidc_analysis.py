@@ -3,7 +3,6 @@ import sys
 import pprint
 from argparse import ArgumentParser
 from xml.etree import ElementTree
-import six
 
 class RepoInvestigatorException(Exception):
     """This is our base exception for this script"""
@@ -15,6 +14,9 @@ class RepoInvestigatorException(Exception):
 
 OAI_NAMESPACE = "{http://www.openarchives.org/OAI/2.0/}"
 DC_NAMESPACE = "{http://purl.org/dc/elements/1.1/}"
+MODS_NAMESPACE = "{http://www.loc.gov/mods/v3}"
+namespaces = {"mods": 'http://www.loc.gov/mods/v3',
+              "oai": 'http://www.openarchives.org/OAI/2.0/'}
 
 class Record:
     """Base class for a Dublin Core metadata record in an OAI-PMH

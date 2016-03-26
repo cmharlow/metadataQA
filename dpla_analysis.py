@@ -155,6 +155,7 @@ class Record:
             present = True
             return present
 
+
 def collect_stats(stats_aggregate, stats):
     #increment the record counter
     stats_aggregate["record_count"] += 1
