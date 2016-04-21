@@ -136,7 +136,7 @@ def calc_completeness(stats_averages):
     collection_field_to_count = 0
 
     wwww = [
-        'mods:name/mods:namePart:',       # who
+        'mods:name/mods:namePart',       # who
         'mods:titleInfo/mods:title',         # what
         'mods:identifier',    # where
         'mods:originInfo/mods:dateCreated'           # when
