@@ -1,9 +1,9 @@
-import hashlib
 import sys
-import pprint
 from argparse import ArgumentParser
-from lxml import etree
-import re
+from xml.etree import ElementTree
+
+ETDMS_NAMESPACE = "{http://www.ndltd.org/standards/metadata/etdms/1.0/}"
+OAI_NAMESPACE = "{http://www.openarchives.org/OAI/2.0/}"
 
 
 class RepoInvestigatorException(Exception):
@@ -14,14 +14,9 @@ class RepoInvestigatorException(Exception):
     def __str__(self):
         return "%s" % (self.value,)
 
-OAI_NAMESPACE = "{http://www.openarchives.org/OAI/2.0/}"
-MODS_NAMESPACE = "{http://www.loc.gov/mods/v3}"
-namespaces = {"mods": 'http://www.loc.gov/mods/v3',
-              "oai": 'http://www.openarchives.org/OAI/2.0/'}
-
 
 class Record:
-    """Base class for a MODS or nested metadata record in an OAI-PMH
+    """Base class for a ETDMS metadata record in an OAI-PMH
        Repository file."""
 
     def __init__(self, elem, args):
@@ -30,71 +25,53 @@ class Record:
 
     def get_record_id(self):
         try:
-            header = self.elem.find("{http://www.openarchives.org/OAI/2.0/}header")
-            record_id = header.find("{http://www.openarchives.org/OAI/2.0/}identifier").text
+            header = self.elem.find(OAI_NAMESPACE + "header")
+            record_id = header.find(OAI_NAMESPACE + "identifier").text
             return record_id
         except:
             raise RepoInvestigatorException("Record does not have a valid Record Identifier")
 
     def get_record_status(self):
-        return self.elem.find("{http://www.openarchives.org/OAI/2.0/}header").get("status", "active")
+        return self.elem.find(OAI_NAMESPACE + "header").get("status", "active")
 
     def get_elements(self):
         out = []
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        if metadata != None:
-            for desc in metadata.iterdescendants():
-                if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
-                    out.append(desc.text.encode("utf-8").strip())
+        try:
+            elements = self.elem[1][0].findall(ETDMS_NAMESPACE + self.args.element)
+            for element in elements:
+                if element.text:
+                    out.append(element.text.encode("utf-8").strip())
             if len(out) == 0:
                 out = None
             self.elements = out
+            return self.elements
+        except IndexError:
+            self.elements = None
             return self.elements
 
-    def get_xpath(self):
+    def get_all_data(self):
         out = []
-        metadata = self.elem.find("oai:metadata/mods:mods", namespaces=namespaces)
-        if metadata != None:
-            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
-                for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    if value.text != None:
-                        out.append(value.text.encode("utf-8").strip())
-            if len(out) == 0:
-                out = None
-            self.elements = out
-            return self.elements
+        for i in self.elem[1][0]:
+            if i.text:
+                out.append((i.tag, i.text.encode("utf-8").strip().replace("\n", " ")))
+        return out
 
     def get_stats(self):
         stats = {}
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        mods = etree.ElementTree(metadata)
-        if metadata != None:
-            for desc in metadata.iterdescendants():
-                if len(desc) == False and desc.text != None: #ignore empties, does NOT have children elements
-                    stats.setdefault(re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NAMESPACE, 'mods:')), 0)
-                    stats[re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NAMESPACE, 'mods:'))] += 1
-        return stats
+        try:
+            for element in self.elem[1][0]:
+                stats.setdefault(element.tag, 0)
+                stats[element.tag] += 1
+            return stats
+        except IndexError:
+            return stats
 
     def has_element(self):
-        out = []
-        present = False
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        if metadata != None:
-            for desc in metadata.iterdescendants():
-                if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
-                    present = True
-                    return present
-
-    def has_xpath(self):
-        out = []
-        present = False
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        if metadata != None:
-            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
-                for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    if value.text != None:
-                        present = True
-                        return present
+        elements = self.elem[1][0].findall(ETDMS_NAMESPACE + self.args.element)
+        for element in elements:
+            if element.text:
+                return True
+        return False
 
 
 def collect_stats(stats_aggregate, stats):
@@ -136,16 +113,16 @@ def calc_completeness(stats_averages):
     collection_field_to_count = 0
 
     wwww = [
-        'mods:name/mods:namePart:',       # who
-        'mods:titleInfo/mods:title',         # what
-        'mods:identifier',    # where
-        'mods:originInfo/mods:dateCreated'           # when
+        "{http://purl.org/dc/elements/1.1/}creator",       # who
+        "{http://purl.org/dc/elements/1.1/}title",         # what
+        "{http://purl.org/dc/elements/1.1/}identifier",    # where
+        "{http://purl.org/dc/elements/1.1/}date"           # when
     ]
 
     dpla = [
-        'mods:titleInfo/mods:title',
-        'mods:identifier',
-        'mods:accessCondition'
+        "{http://purl.org/dc/elements/1.1/}title",
+        "{http://purl.org/dc/elements/1.1/}identifier",
+        "{http://purl.org/dc/elements/1.1/}rights"
     ]
 
     populated_elements = len(stats_averages["field_info"])
@@ -166,10 +143,12 @@ def calc_completeness(stats_averages):
             if element in dpla:
                 dpla_total += element_completeness_percent
 
+    completeness["dc_completeness"] = completeness_total / float(15)
     completeness["collection_completeness"] = collection_total / float(collection_field_to_count)
     completeness["wwww_completeness"] = wwww_total / float(len(wwww))
     completeness["dpla_completeness"] = dpla_total / float(len(dpla))
-    completeness["average_completeness"] = ((completeness["collection_completeness"] +
+    completeness["average_completeness"] = ((completeness["dc_completeness"] +
+                                             completeness["collection_completeness"] +
                                              completeness["wwww_completeness"] +
                                              completeness["dpla_completeness"]) / float(4))
     return completeness
@@ -189,16 +168,16 @@ def pretty_print_stats(stats_averages):
         percentPrint = "=" * (int((percent) / 4))
         columnOne = " " * (element_length - len(element)) + element
         print("%s: |%-25s| %6s/%s | %3d%% " % (
-                    columnOne,
-                    percentPrint,
-                    stats_averages["field_info"][element]["field_count"],
-                    record_count,
-                    percent
-                ))
+            columnOne,
+            percentPrint,
+            stats_averages["field_info"][element]["field_count"],
+            record_count,
+            percent
+        ))
 
     print("\n")
     completeness = calc_completeness(stats_averages)
-    for i in ["collection_completeness", "wwww_completeness", "dpla_completeness", "average_completeness"]:
+    for i in ["dc_completeness", "collection_completeness", "wwww_completeness", "dpla_completeness", "average_completeness"]:
         print("%23s %f" % (i, completeness[i]))
 
 
@@ -207,31 +186,45 @@ def main():
         "record_count": 0,
         "field_info": {}
     }
+    element_stats_aggregate = {}
 
     parser = ArgumentParser(usage='%(prog)s [options] data_filename.xml')
     parser.add_argument("-e", "--element", dest="element", help="element to print to screen")
-    parser.add_argument("-x", "--xpath", dest="xpath", help="get response of xpath expression on mods:mods record")
     parser.add_argument("-i", "--id", action="store_true", dest="id", default=False, help="prepend meta_id to line")
     parser.add_argument("-s", "--stats", action="store_true", dest="stats", default=False, help="only print stats for repository")
     parser.add_argument("-p", "--present", action="store_true", dest="present", default=False, help="print if there is value of defined element in record")
+    parser.add_argument("-d", "--dump", action="store_true", dest="dump", default=False, help="Dump all record data to a tab delimited format")
     parser.add_argument("datafile", help="put the datafile you want analyzed here")
 
     args = parser.parse_args()
 
     if not len(sys.argv) > 0:
         parser.print_help()
-        parser.exit()
+        exit()
 
-    if args.element is None and args.xpath is None:
+    if args.element is None:
         args.stats = True
 
     s = 0
-    for event, elem in etree.iterparse(args.datafile):
-        if elem.tag == OAI_NAMESPACE + "record" or "document":
+    nsmap = {}
+    def fixtag(ns, tag):
+        return '{' + nsmap[ns] + '}' + tag
+
+    for event, elem in ElementTree.iterparse(args.datafile):
+        if elem.tag == OAI_NAMESPACE + "record":
             r = Record(elem, args)
             record_id = r.get_record_id()
 
-            if args.stats is False and args.present is False and args.element is not None:
+            if args.dump is True:
+                if r.get_record_status() != "deleted":
+                    record_fields = r.get_all_data()
+                    for field_data in record_fields:
+                        print("%s\t%s\t%s" % (record_id, field_data[0], field_data[1].replace("\t", " ")))
+                elem.clear()
+                continue
+
+            if args.stats is False and args.present is False:
+                #move along if record is deleted
                 if r.get_record_status() != "deleted" and r.get_elements() is not None:
                     for i in r.get_elements():
                         if args.id:
@@ -239,21 +232,9 @@ def main():
                         else:
                             print(i)
 
-            if args.stats is False and args.present is False and args.xpath is not None:
-                if r.get_record_status() != "deleted" and r.get_xpath() is not None:
-                    for i in r.get_xpath():
-                        if args.id:
-                            print("\t".join([record_id, i]))
-                        else:
-                            print(i)
-
-            if args.stats is False and args.element is not None and args.present is True:
+            if args.stats is False and args.present is True:
                 if r.get_record_status() != "deleted":
                     print("%s %s" % (record_id, r.has_element()))
-
-            if args.stats is False and args.xpath is not None and args.present is True:
-                if r.get_record_status() != "deleted":
-                    print("%s %s" % (record_id, r.has_xpath()))
 
             if args.stats is True and args.element is None:
                 if (s % 1000) == 0 and s != 0:
@@ -263,7 +244,7 @@ def main():
                     collect_stats(stats_aggregate, r.get_stats())
             elem.clear()
 
-    if args.stats is True and args.element is None:
+    if args.stats is True and args.element is None and args.dump is False:
         stats_averages = create_stats_averages(stats_aggregate)
         pretty_print_stats(stats_averages)
 

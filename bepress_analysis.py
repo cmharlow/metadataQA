@@ -14,8 +14,6 @@ class RepoInvestigatorException(Exception):
     def __str__(self):
         return "%s" % (self.value,)
 
-OAI_NAMESPACE = "{http://www.openarchives.org/OAI/2.0/}"
-MODS_NAMESPACE = "{http://www.loc.gov/mods/v3}"
 namespaces = {"mods": 'http://www.loc.gov/mods/v3',
               "oai": 'http://www.openarchives.org/OAI/2.0/'}
 
@@ -30,21 +28,17 @@ class Record:
 
     def get_record_id(self):
         try:
-            header = self.elem.find("{http://www.openarchives.org/OAI/2.0/}header")
-            record_id = header.find("{http://www.openarchives.org/OAI/2.0/}identifier").text
+            record_id = self.elem.find("submission-path").text
             return record_id
         except:
-            raise RepoInvestigatorException("Record does not have a valid Record Identifier")
-
-    def get_record_status(self):
-        return self.elem.find("{http://www.openarchives.org/OAI/2.0/}header").get("status", "active")
+            raise RepoInvestigatorException("Record does not have a Record ID")
 
     def get_elements(self):
         out = []
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        if metadata != None:
+        metadata = self.elem
+        if metadata is not None:
             for desc in metadata.iterdescendants():
-                if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
+                if desc.tag == self.args.element and desc.text is not None and not(re.match('^\s+$', desc.text)):
                     out.append(desc.text.encode("utf-8").strip())
             if len(out) == 0:
                 out = None
@@ -53,11 +47,11 @@ class Record:
 
     def get_xpath(self):
         out = []
-        metadata = self.elem.find("oai:metadata/mods:mods", namespaces=namespaces)
-        if metadata != None:
-            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
-                for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    if value.text != None:
+        metadata = self.elem
+        if metadata is not None:
+            if metadata.xpath(self.args.xpath) is not None:
+                for value in metadata.xpath(self.args.xpath):
+                    if value.text is not None:
                         out.append(value.text.encode("utf-8").strip())
             if len(out) == 0:
                 out = None
@@ -66,33 +60,41 @@ class Record:
 
     def get_stats(self):
         stats = {}
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
+        metadata = self.elem
         mods = etree.ElementTree(metadata)
-        if metadata != None:
+        if metadata is not None:
             for desc in metadata.iterdescendants():
-                if len(desc) == False and desc.text != None: #ignore empties, does NOT have children elements
-                    stats.setdefault(re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NAMESPACE, 'mods:')), 0)
-                    stats[re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NAMESPACE, 'mods:'))] += 1
+                if desc.tag == 'field':
+                    output = ''
+                    if desc.get('name') is not None:
+                        output += ('fields/field[@name=' + desc.get('name'))
+                    if desc.get('type') is not None:
+                        output += ('][@type=' + desc.get('type') + ']')
+                    stats.setdefault(output, 0)
+                    stats[output] += 1
+                elif len(desc) == False and desc.text is not None and not(re.match('^\s+$', desc.text)): #ignore empties, does NOT have children elements
+                    stats.setdefault(re.sub('\[\d+\]','', mods.getelementpath(desc)), 0)
+                    stats[re.sub('\[\d+\]','', mods.getelementpath(desc))] += 1
         return stats
 
     def has_element(self):
         out = []
         present = False
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        if metadata != None:
+        metadata = self.elem
+        if metadata is not None:
             for desc in metadata.iterdescendants():
-                if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
+                if desc.tag == self.args.element and desc.text is not None and not(re.match('^\s+$', desc.text)):
                     present = True
                     return present
 
     def has_xpath(self):
         out = []
         present = False
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
+        metadata = self.elem
         if metadata != None:
-            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
-                for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    if value.text != None:
+            if metadata.xpath(self.args.xpath) is not None:
+                for value in metadata.xpath(self.args.xpath):
+                    if value.text:
                         present = True
                         return present
 
@@ -227,12 +229,12 @@ def main():
 
     s = 0
     for event, elem in etree.iterparse(args.datafile):
-        if elem.tag == OAI_NAMESPACE + "record" or "document":
+        if elem.tag == "document":
             r = Record(elem, args)
             record_id = r.get_record_id()
 
             if args.stats is False and args.present is False and args.element is not None:
-                if r.get_record_status() != "deleted" and r.get_elements() is not None:
+                if r.get_elements() is not None:
                     for i in r.get_elements():
                         if args.id:
                             print("\t".join([record_id, i]))
@@ -240,7 +242,7 @@ def main():
                             print(i)
 
             if args.stats is False and args.present is False and args.xpath is not None:
-                if r.get_record_status() != "deleted" and r.get_xpath() is not None:
+                if r.get_xpath() is not None:
                     for i in r.get_xpath():
                         if args.id:
                             print("\t".join([record_id, i]))
@@ -248,19 +250,16 @@ def main():
                             print(i)
 
             if args.stats is False and args.element is not None and args.present is True:
-                if r.get_record_status() != "deleted":
-                    print("%s %s" % (record_id, r.has_element()))
+                print("%s %s" % (record_id, r.has_element()))
 
             if args.stats is False and args.xpath is not None and args.present is True:
-                if r.get_record_status() != "deleted":
-                    print("%s %s" % (record_id, r.has_xpath()))
+                print("%s %s" % (record_id, r.has_xpath()))
 
             if args.stats is True and args.element is None:
                 if (s % 1000) == 0 and s != 0:
                     print("%d records processed" % s)
                 s += 1
-                if r.get_record_status() != "deleted":
-                    collect_stats(stats_aggregate, r.get_stats())
+                collect_stats(stats_aggregate, r.get_stats())
             elem.clear()
 
     if args.stats is True and args.element is None:
