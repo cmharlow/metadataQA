@@ -1,21 +1,30 @@
+"""Harvest Subset of DPLA Metadata from the DPLA API - Requires Auth."""
 import codecs
 from argparse import ArgumentParser
 import os
 import requests
 import json
 
-if __name__ == "__main__":
-
+def main():
     parser = ArgumentParser()
 
-    parser.add_argument("-o", "--filename", dest="filename", help="write repository to file", default="DPLAoutput.json")
-    parser.add_argument("-k", "--apikey", dest="apikey", help="your unique DPLA API key")
-    parser.add_argument("-a", "--after", dest="afterDate", help="items with creation date after yyyy-mm-dd")
-    parser.add_argument("-f", "--before", dest="beforeDate", help="items with creation date before yyyy-mm-dd")
-    parser.add_argument("-t", "--title", dest="title", help="search the item title")
-    parser.add_argument("-q", "--keyword", dest="keyword", help="keywork search")
-    parser.add_argument("-p", "--provider", dest="provider", help="specify the metadata provider, i.e., local institution")
-    parser.add_argument("-u", "--hub", dest="hub", help="specify the service or content hub")
+    parser.add_argument("-o", "--filename", dest="filename",
+                        help="write repository to file",
+                        default="DPLAharvest.json")
+    parser.add_argument("-k", "--apikey", dest="apikey",
+                        help="your unique DPLA API key")
+    parser.add_argument("-a", "--after", dest="afterDate",
+                        help="items with creation date after yyyy-mm-dd")
+    parser.add_argument("-f", "--before", dest="beforeDate",
+                        help="items with creation date before yyyy-mm-dd")
+    parser.add_argument("-t", "--title", dest="title",
+                        help="search the item title")
+    parser.add_argument("-q", "--keyword", dest="keyword",
+                        help="keyword search")
+    parser.add_argument("-p", "--provider", dest="provider",
+                        help="specify a metadata provider / local institution")
+    parser.add_argument("-u", "--hub", dest="hub",
+                        help="specify a service or content hub")
 
     args = parser.parse_args()
 
@@ -89,3 +98,6 @@ if __name__ == "__main__":
         ofile.close()
 
         print "Wrote out %d records" % recordCount
+
+if __name__ == '__main__':
+    main()
