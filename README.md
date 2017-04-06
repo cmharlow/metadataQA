@@ -1,4 +1,4 @@
-#metadataQA
+# Metadata Quality Analysis
 
 A set of metadata harvesting and analysis scripts, largely built off the model/skeleton of Mark Phillips' wonderful work:
 
@@ -8,7 +8,7 @@ A set of metadata harvesting and analysis scripts, largely built off the model/s
 
 So please give any gratitude for these scripts to Mark Phillips, and any complaints to Christina.
 
-##Warning
+## Warning(s)
 
 A forthcoming presentation somewhat prompted me to finally collect and share these - the presentation will be linked here, along with accompanying blog post with thoughts on library metadata QA. However, they were built usually at midnight with huge metadata projects/migrations looming where I didn't have the tools I needed to properly review metadata for my work.
 
@@ -18,7 +18,7 @@ As such, these scripts are rather haphazard and very, very alpha. In particular 
 
 Because these scripts use new libraries*, and they change the original intent of the Phillip's work (working with nested XML, working with DPLA API and DPLA Json, eventually will share working with MARC via Pymarc), these are a new repo. I'd like to eventually pull these bits and pieces of helpful scripts together in a more coherent fashion for library metadata harvest and review; see the 'to be enhanced' section below.
 
-*Some, not all, changes include:
+\*Some, not all, changes include:
 
 - argparse instead of optparse to avoid deprecated libraries
 - lxml.etree instead of elementtree alone to support better xpath queries for nested elements (MODS)
@@ -39,6 +39,7 @@ So, working with python 2.7:
     ```
     1. download this repository to your computer from the [GitHub page](https://github.com/cmh2166/metadataQA) - use the 'Download Zip' button in bottom right corner. Move the zip file to the place you wish to have these scripts, then unzip.
 2. once you've got the scripts on your computer, change to inside the metadataQA directory, and install the requirements:
+
 ```
 $ pip install -r requirements.txt
 ```
@@ -118,16 +119,19 @@ optional arguments:
 - -d: Dump all record data to a tab delimited format (*this has not been tested*)
 
 To get a field report:
+
 ```
 $ python oaidc_analysis.py test/output.dc.xml
 ```
 
 To get all the values for the dc:creator field:
+
 ```
 $ python oaidc_analysis.py test/output.xml -e creator  
 ```
 
 To get all the unique values for the dc:creator field, sorted by count:
+
 ```
 $ python oaidc_analysis.py test/output.xml -e creator | sort | uniq -c  
 ```
