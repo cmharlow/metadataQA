@@ -1,5 +1,8 @@
 # Metadata Quality Analysis
 
+*Harvest Tested & Working on: Python 2.7.10, 2.7.13, 3.5*
+*Analysis Tested & Working on: Python 2.7.10, 2.7.13*
+
 A set of metadata harvesting and analysis scripts, largely built off the model/skeleton of Mark Phillips' wonderful work:
 
 - [pyoaiharvester](https://github.com/vphill/pyoaiharvester)
@@ -10,19 +13,21 @@ So please give any gratitude for these scripts to Mark Phillips, and any complai
 
 ## Warning(s)
 
-A forthcoming presentation somewhat prompted me to finally collect and share these - the presentation will be linked here, along with accompanying blog post with thoughts on library metadata QA. However, they were built usually at midnight with huge metadata projects/migrations looming where I didn't have the tools I needed to properly review metadata for my work.
+A huge project and presentation prompted me to finally collect and share these. However, these scripts were originally built usually at midnight with huge metadata projects/migrations looming where I didn't have the tools I needed to properly review metadata sets.
 
 As such, these scripts are rather haphazard and very, very alpha. In particular the DPLA work, which was built in the context of the Digital Library of Tennessee Service hub, as a way to review our metadata once in the DPLA, is the most likely to break in unexpected and beautiful ways.
 
-## Why not fork?
+I am currently working on refactoring these to be more stable, have testing coverage, and perhaps make into a Python library. Check out the Issues on this repo to see the work going on (or see what branches are currently active).
 
-Because these scripts use new libraries*, and they change the original intent of the Phillip's work (working with nested XML, working with DPLA API and DPLA Json, eventually will share working with MARC via Pymarc), these are a new repo. I'd like to eventually pull these bits and pieces of helpful scripts together in a more coherent fashion for library metadata harvest and review; see the 'to be enhanced' section below.
+## Why not fork from Mark Phillips' original work?
 
-\*Some, not all, changes include:
+Because these scripts use new libraries*, and they change the original intent of the Phillip's work (working with nested XML & other data publication methods + representations beyond OAI-PMH and XML), these are a new repository.
 
-- argparse instead of optparse to avoid deprecated libraries
-- lxml.etree instead of elementtree alone to support better xpath queries for nested elements (MODS)
-- rewritten for working with json for DPLA data
+\*Some, not all, of the changes from the originating work include:
+
+- argparse instead of optparse for the CLI client to avoid deprecated libraries
+- lxml.etree instead of elementtree alone to support better xpath queries for nested elements
+- rewritten for working with JSON for DPLA API data and SharedShelf API data, MARC from an Oracle database,
 - adding support for DPLA analysis tool to find fields according to ObjectPath syntax
 - adding support for MODS analysis tool to find elements according to XPath syntax
 

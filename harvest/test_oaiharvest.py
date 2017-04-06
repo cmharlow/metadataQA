@@ -1,7 +1,10 @@
 """Testing the OAI-PMH Harvest Module."""
 import unittest
 from harvestOAI import getFile
+from harvestOAI import writeHarvest
 import re
+import requests
+import codecs
 
 error_urls = [400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 415, 416, 500,
               501, 502, 504, 505, 511, 520]
@@ -54,8 +57,14 @@ class WriteHarvest(unittest.TestCase):
         pass
 
     def testNoResumption(self):
-        """TBD. """
-        pass
+        """Pass Good OAI-PMH Link, Info, & Filename, Return non-0 Count."""
+        id_resp = requests.get('https://ecommons.cornell.edu/dspace-oai/request?verb=ListIdentifiers&metadataPrefix=oai_dc&set=com_1813_2939')
+        golden_recCount = len(re.findall('<identifier>', id_resp.text))
+        dataClean = open('harvest/fixtures/test_OAINoResumptionDataClean_fixture.txt').read()
+        ofile = codecs.lookup('utf-8')[-1](open('harvest/fixtures/test_OAINoResumptionDataOut_test.xml', 'wb'))
+        test_recCount = writeHarvest('https://ecommons.cornell.edu/dspace-oai', dataClean, ofile)
+        ofile.close()
+        self.assertEqual(golden_recCount, test_recCount)
 
     def testResumption(self):
         """TBD."""

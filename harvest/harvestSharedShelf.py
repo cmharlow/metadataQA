@@ -1,4 +1,4 @@
-"""Harvest metadata mapped to field labels from SharedShelf API."""
+"""Harvest metadata mapped to field label from SharedShelf API-Requires Auth"""
 from argparse import ArgumentParser
 import os
 import requests
@@ -13,7 +13,7 @@ publ_re = re.compile("^publishing_status[.-]\d+")
 
 
 def getCookies(args, parser):
-    """Get cookies from authentication of SharedShelf API."""
+    """Get cookies for authentication of SharedShelf API."""
     try:
         if args.email and args.password:
             data = {'email': args.email, 'password': args.password}
@@ -26,7 +26,8 @@ def getCookies(args, parser):
         return(cookies)
     except Exception:
         parser.print_help()
-        parser.error("need a valid ArtStor user email and password.")
+        parser.error("Need a valid ArtStor user email and password.")
+        exit()
 
 
 def callAPI(base_url, coll_id, cookies):
@@ -52,7 +53,7 @@ def getCollections(cookies, proj_id):
                 coll_name = proj['name']
                 colls[coll_id] = coll_name
         if not coll_name:
-            print("We couldn't find a collection for that ID. Here's a list: ")
+            print("No collection for id %s. Here's a list to help: " % proj_id)
             print("==========================================================")
             for proj in projs['items']:
                 print('Collection: %s || ID: %d' % (proj['name'], proj['id']))

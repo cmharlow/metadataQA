@@ -30,7 +30,7 @@ def getFile(link, command, sleepTime=0):
         elif resp.status_code == 301:
             print("%s redirected to %s ." % remoteAddr, resp.url)
             return(getFile(resp.url, command))
-        elif 'application/xml' not in resp.headers.get('content-type'):
+        elif '/xml' not in resp.headers.get('content-type'):
             print("ERROR: content-type=%s" % (resp.headers.get('content-type')))
             exit()
         else:
@@ -155,7 +155,7 @@ def main():
     remoteData = getFile(args.link, 'ListRecords' + verbOpts)
     data = zipRemoteData(remoteData)
     data = checkOAIErrors(data)
-    dataClean = handleEncodingErrors(data).encode('utf8')
+    dataClean = handleEncodingErrors(data)
 
     # Iterate over Records, ResumptionTokens, & Write to File
     recordCount = writeHarvest(args.link, dataClean, ofile)
