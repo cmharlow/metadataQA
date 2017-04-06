@@ -68,7 +68,7 @@ def zipRemoteData(remoteData):
 
 def checkOAIErrors(remoteData):
     # Check for OAI-PMH Errors in the XML Response
-    oaiErr = re.search('<error *code=\"([^"]*)">(.*)</error>', remoteData)
+    oaiErr = re.search(b'<error *code=\"([^"]*)">(.*)</error>', remoteData)
     if oaiErr:
         print("OAIERROR: code=%s '%s'" % (oaiErr.group(1), oaiErr.group(2)))
         exit()
