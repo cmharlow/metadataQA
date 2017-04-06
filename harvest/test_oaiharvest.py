@@ -1,8 +1,7 @@
 """Testing the OAI-PMH Harvest Module."""
 import unittest
-from oaiharvest import getFile
+from harvestOAI import getFile
 import re
-import os
 
 error_urls = [400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 415, 416, 500,
               501, 502, 504, 505, 511, 520]
