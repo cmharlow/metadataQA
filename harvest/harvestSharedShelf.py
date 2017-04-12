@@ -132,6 +132,7 @@ def generateMetadataDump(cookies, colls):
             else:
                 if field_code not in output[field_label]:
                     output[field_label].append(field_code)
+            output[field_label].append(coll_id)
     return(output)
 
 

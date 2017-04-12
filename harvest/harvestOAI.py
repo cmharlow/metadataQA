@@ -1,4 +1,5 @@
 """Harvest Metadata from an OAI-PMH Feed."""
+from __future__ import unicode_literals
 import requests
 import zlib
 import time
@@ -7,6 +8,7 @@ import xml.dom.pulldom
 import xml.dom.minidom
 import codecs
 from argparse import ArgumentParser
+from builtins import chr
 
 nDataBytes = 0
 nRawBytes = 0
@@ -94,23 +96,32 @@ def handleEncodingErrors(inputFile):
     RE_XML_IL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                 u'|' + \
                 u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' %\
-                (unichr(0xd800), unichr(0xdbff), unichr(0xdc00),
-                 unichr(0xdfff), unichr(0xd800), unichr(0xdbff),
-                 unichr(0xdc00), unichr(0xdfff), unichr(0xd800),
-                 unichr(0xdbff), unichr(0xdc00), unichr(0xdfff))
-    outputFile = re.sub(RE_XML_IL, "?", inputFile)
+                (chr(0xd800), chr(0xdbff), chr(0xdc00),
+                 chr(0xdfff), chr(0xd800), chr(0xdbff),
+                 chr(0xdc00), chr(0xdfff), chr(0xd800),
+                 chr(0xdbff), chr(0xdc00), chr(0xdfff))
+    outputFile = re.sub(RE_XML_IL, u"?", inputFile.decode('utf-8'))
     return(outputFile)
 
 
 def writeHarvest(link, data, ofile):
     recordCount = 0
     while data:
-        events = xml.dom.pulldom.parseString(data)
-        for (event, node) in events:
-            if event == "START_ELEMENT" and node.tagName == 'record':
-                events.expandNode(node)
-                node.writexml(ofile)
-                recordCount += 1
+        # I need a better way to handle python 2/3 interop here, but not finding it.
+        try:
+            events = xml.dom.pulldom.parseString(data.encode('utf-8'))
+            for (event, node) in events:
+                if event == "START_ELEMENT" and node.tagName == 'record':
+                    events.expandNode(node)
+                    node.writexml(ofile)
+                    recordCount += 1
+        except TypeError as e:
+            events = xml.dom.pulldom.parseString(data)
+            for (event, node) in events:
+                if event == "START_ELEMENT" and node.tagName == 'record':
+                    events.expandNode(node)
+                    node.writexml(ofile)
+                    recordCount += 1
         more = re.search('<resumptionToken[^>]*>(.*)</resumptionToken>', data)
         if not more:
             break
