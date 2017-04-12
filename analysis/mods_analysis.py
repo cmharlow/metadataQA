@@ -224,7 +224,7 @@ def main():
 
     s = 0
     for event, elem in etree.iterparse(args.datafile):
-        if elem.tag == OAI_NAMESPACE + "record" or "document":
+        if elem.tag == namespaces['oai'] + "record" or "document":
             r = Record(elem, args)
             record_id = r.get_record_id()
 

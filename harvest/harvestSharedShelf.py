@@ -1,4 +1,4 @@
-"""Harvest metadata mapped to field labels from SharedShelf API."""
+"""Harvest metadata mapped to field label from SharedShelf API-Requires Auth"""
 from argparse import ArgumentParser
 import os
 import requests
@@ -13,7 +13,7 @@ publ_re = re.compile("^publishing_status[.-]\d+")
 
 
 def getCookies(args, parser):
-    """Get cookies from authentication of SharedShelf API."""
+    """Get cookies for authentication of SharedShelf API."""
     try:
         if args.email and args.password:
             data = {'email': args.email, 'password': args.password}
@@ -26,7 +26,17 @@ def getCookies(args, parser):
         return(cookies)
     except Exception:
         parser.print_help()
-        parser.error("need a valid ArtStor user email and password.")
+        parser.error("Need a valid ArtStor user email and password.")
+        exit()
+
+
+def callAPI(base_url, coll_id, cookies):
+    # Grab assets data for each unique SharedShelf Collection
+    url = base_url + 'projects/' + str(coll_id) + url_rest
+    data_start = requests.get(url, cookies=cookies)
+    data_start.encoding = 'utf8'
+    data = data_start.json()
+    return(data)
 
 
 def getCollections(cookies, proj_id):
@@ -43,7 +53,7 @@ def getCollections(cookies, proj_id):
                 coll_name = proj['name']
                 colls[coll_id] = coll_name
         if not coll_name:
-            print("We couldn't find a collection for that ID. Here's a list: ")
+            print("No collection for id %s. Here's a list to help: " % proj_id)
             print("==========================================================")
             for proj in projs['items']:
                 print('Collection: %s || ID: %d' % (proj['name'], proj['id']))
@@ -61,12 +71,7 @@ def generateDataDump(cookies, colls, filename):
     output = {}
     for coll_id in colls:
         print("Retrieving project %s" % colls[coll_id])
-
-        # Grab assets data for each unique SharedShelf Collection
-        url = base_url + 'projects/' + str(coll_id) + url_rest
-        data_start = requests.get(url, cookies=cookies)
-        data_start.encoding = 'utf8'
-        data = data_start.json()
+        data = callAPI(base_url, coll_id, cookies)
 
         # Grab SharedShelf metadata fields for mapping values to text fields.
         fields_ss = data['metaData']['columns']
@@ -108,16 +113,12 @@ def generateDataDump(cookies, colls, filename):
     print("Wrote out %d records" % total)
 
 
-def generateMetadataDump(cookies, colls, filename):
+def generateMetadataDump(cookies, colls):
     output = {}
+
     for coll_id in colls:
         print("Retrieving metadata mapping from project %s" % colls[coll_id])
-
-        # Grab assets data for each unique SharedShelf Collection
-        url = base_url + 'projects/' + str(coll_id) + url_rest
-        data_start = requests.get(url, cookies=cookies)
-        data_start.encoding = 'utf8'
-        data = data_start.json()
+        data = callAPI(base_url, coll_id, cookies)
 
         # Grab SharedShelf metadata fields for mapping values to text fields.
         fields_ss = data['metaData']['columns']
@@ -131,16 +132,20 @@ def generateMetadataDump(cookies, colls, filename):
             else:
                 if field_code not in output[field_label]:
                     output[field_label].append(field_code)
+            output[field_label].append(coll_id)
+    return(output)
 
-    if not os.path.exists(os.path.dirname(filename)) and os.path.dirname(filename):
+
+def writeMetadataDump(output, fname):
+    if not os.path.exists(os.path.dirname(fname)) and os.path.dirname(fname):
         try:
-            os.makedirs(os.path.dirname(filename))
+            os.makedirs(os.path.dirname(fname))
         except OSError as exc:
             if exc.errno != errno.EEXIST:
                 raise
-    with open(filename, 'w') as csv_file:
+    with open(fname, 'w') as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerow(['Field Label', 'Field codes from various collections that map to that Label'])
+        writer.writerow(['Field Label', 'Field codes that map to that Label'])
         for key, value in output.items():
             row = [key]
             codes = None
@@ -155,7 +160,6 @@ def generateMetadataDump(cookies, colls, filename):
 
 def main():
     parser = ArgumentParser()
-
     parser.add_argument("-o", "--filename", dest="filename",
                         help="write to file", default="data/output.json")
     parser.add_argument("-e", "--email", dest="email",
@@ -170,14 +174,17 @@ def main():
                         action="store_true", help="Return collated metadata \
                         label to SharedShelf API field codes dictionaries.")
     args = parser.parse_args()
+
     # Authenticating the User on the SharedShelf API.
     cookies = getCookies(args, parser)
 
     # Get All Projects/Collections in SharedShelf First.
     print("Writing metadata to data/metadata_fields.csv from SharedShelf.")
+
     if args.metadata:
         colls = getCollections(cookies, None)
-        generateMetadataDump(cookies, colls, "metadata_fields.csv")
+        output = generateMetadataDump(cookies, colls)
+        writeMetadataDump(output, "metadata_fields.csv")
     else:
         if args.coll:
             spec_id = args.coll
