@@ -63,7 +63,7 @@ def iterateRecordPull(data, dplaAPI, callOpts):
     dplaRecordCount = data.json()['count']
     dplaPageCount = (dplaRecordCount / 500) + 1
 
-    for p in range(1, dplaPageCount + 1):
+    for p in range(1, int(dplaPageCount) + 1):
         for n in range(0, 500):
             try:
                 DPLAobject = data.json()['docs'][n]
