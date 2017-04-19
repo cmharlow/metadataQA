@@ -2,9 +2,13 @@ import sys
 from argparse import ArgumentParser
 from lxml import etree
 import re
-MODS_NAMESPACE = "{http://www.loc.gov/mods/v3}"
+
+MODS_NS = "{http://www.loc.gov/mods/v3}"
+OAI_NS = "{http://www.openarchives.org/OAI/2.0/}"
+OAI_DC = "{http://www.openarchives.org/OAI/2.0/oai_dc/}"
 namespaces = {"mods": 'http://www.loc.gov/mods/v3',
-              "oai": 'http://www.openarchives.org/OAI/2.0/'}
+              "oai": 'http://www.openarchives.org/OAI/2.0/',
+              "oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/"}
 
 
 class RepoInvestigatorException(Exception):
@@ -22,26 +26,30 @@ class Record:
        Repository file."""
 
     def __init__(self, elem, args):
+        """Create the Record class instance."""
         self.elem = elem
         self.args = args
 
     def get_record_id(self):
+        """Find an identifier for the record, checking the OAI header."""
         try:
-            header = self.elem.find("{http://www.openarchives.org/OAI/2.0/}header")
-            record_id = header.find("{http://www.openarchives.org/OAI/2.0/}identifier").text
+            header = self.elem.find("%sheader" % OAI_NS)
+            record_id = header.find("%sidentifier" % OAI_NS).text
             return record_id
         except:
-            raise RepoInvestigatorException("Record does not have a valid Record Identifier")
+            raise RepoInvestigatorException("Record does not have a valid Record Identifier. Check the structure of the Harvested XML (does it have a OAI header? Are the namespaces correct?) and the XML path used here to get to the identifier.")
 
     def get_record_status(self):
-        return self.elem.find("{http://www.openarchives.org/OAI/2.0/}header").get("status", "active")
+        """Get only 'active' status OAI-PMH records."""
+        return self.elem.find("%sheader" % OAI_NS).get("status", "active")
 
     def get_elements(self):
+        """Get all the values for a given MODS element/field."""
         out = []
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        if metadata != None:
+        metadata = self.elem.find("%smetadata/%smods" % (OAI_NS, MODS_NS))
+        if len(metadata):
             for desc in metadata.iterdescendants():
-                if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
+                if (desc.tag == MODS_NS + self.args.element) and desc.text:
                     out.append(desc.text.encode("utf-8").strip())
             if len(out) == 0:
                 out = None
@@ -49,12 +57,13 @@ class Record:
             return self.elements
 
     def get_xpath(self):
+        """Get all the values for a given nested MODS element/field."""
         out = []
         metadata = self.elem.find("oai:metadata/mods:mods", namespaces=namespaces)
-        if metadata != None:
-            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
+        if len(metadata):
+            if metadata.xpath(self.args.xpath, namespaces=namespaces):
                 for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    if value.text != None:
+                    if value.text:
                         out.append(value.text.encode("utf-8").strip())
             if len(out) == 0:
                 out = None
@@ -62,40 +71,45 @@ class Record:
             return self.elements
 
     def get_stats(self):
+        """Get the field presence stats for the default report."""
         stats = {}
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
+        metadata = self.elem.find("%smetadata/%smods" % (OAI_NS, MODS_NS))
         mods = etree.ElementTree(metadata)
-        if metadata != None:
+        if len(metadata):
             for desc in metadata.iterdescendants():
-                if len(desc) == False and desc.text != None: #ignore empties, does NOT have children elements
-                    stats.setdefault(re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NAMESPACE, 'mods:')), 0)
-                    stats[re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NAMESPACE, 'mods:'))] += 1
+                if len(desc) == 0 and desc.text:
+                    # ignore empties, does NOT have children elements
+                    stats.setdefault(re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NS, 'mods:')), 0)
+                    stats[re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NS, 'mods:'))] += 1
         return stats
 
     def has_element(self):
+        """Return True/False if a given field is present and non-empty."""
         out = []
         present = False
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
+        metadata = self.elem.find("%smetadata/%smods" % (OAI_NS, MODS_NS))
         if metadata != None:
             for desc in metadata.iterdescendants():
-                if desc.tag == MODS_NAMESPACE + self.args.element and desc.text != None:
+                if desc.tag == MODS_NS + self.args.element and desc.text != None:
                     present = True
                     return present
 
     def has_xpath(self):
+        """Return True/False if a given nested field is present & non-empty."""
         out = []
         present = False
-        metadata = self.elem.find("{http://www.openarchives.org/OAI/2.0/}metadata/{http://www.loc.gov/mods/v3}mods")
-        if metadata != None:
-            if metadata.xpath(self.args.xpath, namespaces=namespaces) != None:
+        metadata = self.elem.find("%smetadata/%smods" % (OAI_NS, MODS_NS))
+        if len(metadata):
+            if metadata.xpath(self.args.xpath, namespaces=namespaces):
                 for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    if value.text != None:
+                    if value.text:
                         present = True
                         return present
 
 
 def collect_stats(stats_aggregate, stats):
-    #increment the record counter
+    """Method for generating the default field usage report."""
+    # increment the record counter
     stats_aggregate["record_count"] += 1
 
     for field in stats:
@@ -110,6 +124,7 @@ def collect_stats(stats_aggregate, stats):
 
 
 def create_stats_averages(stats_aggregate):
+    """Method for generating the default field usage report."""
     for field in stats_aggregate["field_info"]:
         field_count = stats_aggregate["field_info"][field]["field_count"]
         field_count_total = stats_aggregate["field_info"][field]["field_count_total"]
@@ -124,6 +139,7 @@ def create_stats_averages(stats_aggregate):
 
 
 def calc_completeness(stats_averages):
+    """Method for generating the default field usage report."""
     completeness = {}
     record_count = stats_averages["record_count"]
     completeness_total = 0
@@ -173,6 +189,7 @@ def calc_completeness(stats_averages):
 
 
 def pretty_print_stats(stats_averages):
+    """Method for generating the default field usage report."""
     record_count = stats_averages["record_count"]
     #get header length
     element_length = 0
@@ -200,18 +217,25 @@ def pretty_print_stats(stats_averages):
 
 
 def main():
+    # Sets up values needed for the default field report.
     stats_aggregate = {
         "record_count": 0,
         "field_info": {}
     }
 
+    # CLI client options.
     parser = ArgumentParser(usage='%(prog)s [options] data_filename.xml')
-    parser.add_argument("-e", "--element", dest="element", help="element to print to screen")
-    parser.add_argument("-x", "--xpath", dest="xpath", help="get response of xpath expression on mods:mods record")
-    parser.add_argument("-i", "--id", action="store_true", dest="id", default=False, help="prepend meta_id to line")
-    parser.add_argument("-s", "--stats", action="store_true", dest="stats", default=False, help="only print stats for repository")
-    parser.add_argument("-p", "--present", action="store_true", dest="present", default=False, help="print if there is value of defined element in record")
-    parser.add_argument("datafile", help="put the datafile you want analyzed here")
+    parser.add_argument("-e", "--element", dest="element",
+                        help="element to print to screen")
+    parser.add_argument("-x", "--xpath", dest="xpath",
+                        help="get value of xpath on mods:mods record")
+    parser.add_argument("-i", "--id", action="store_true", dest="id",
+                        default=False, help="prepend meta_id to line")
+    parser.add_argument("-s", "--stats", action="store_true", dest="stats",
+                        default=False, help="only print stats for repository")
+    parser.add_argument("-p", "--present", action="store_true", dest="present",
+                        default=False, help="print if there is value of field")
+    parser.add_argument("datafile", help="the datafile you want analyzed.")
 
     args = parser.parse_args()
 
@@ -224,7 +248,7 @@ def main():
 
     s = 0
     for event, elem in etree.iterparse(args.datafile):
-        if elem.tag == namespaces['oai'] + "record" or "document":
+        if elem.tag == OAI_NS + "record":
             r = Record(elem, args)
             record_id = r.get_record_id()
 
@@ -263,6 +287,7 @@ def main():
     if args.stats is True and args.element is None:
         stats_averages = create_stats_averages(stats_aggregate)
         pretty_print_stats(stats_averages)
+
 
 if __name__ == "__main__":
     main()
