@@ -178,10 +178,19 @@ def calc_completeness(stats_averages):
             #gather dpla completeness
             if element in dpla:
                 dpla_total += element_completeness_percent
-
-    completeness["collection_completeness"] = collection_total / float(collection_field_to_count)
-    completeness["wwww_completeness"] = wwww_total / float(len(wwww))
-    completeness["dpla_completeness"] = dpla_total / float(len(dpla))
+    
+    if int(collection_field_to_count) > 0:
+        completeness["collection_completeness"] = collection_total / float(collection_field_to_count)
+    else:
+        completeness["collection_completeness"] = 0
+    if int(len(wwww)) > 0:   
+        completeness["wwww_completeness"] = wwww_total / float(len(wwww))
+    else:
+        completeness["wwwe_completeness"] = 0
+    if int(len(dpla)) > 0:
+        completeness["dpla_completeness"] = dpla_total / float(len(dpla))
+    else:
+        completeness["dpla_completeness"] = 0
     completeness["average_completeness"] = ((completeness["collection_completeness"] +
                                              completeness["wwww_completeness"] +
                                              completeness["dpla_completeness"]) / float(4))
