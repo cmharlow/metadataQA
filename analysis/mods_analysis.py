@@ -60,15 +60,16 @@ class Record:
         """Get all the values for a given nested MODS element/field."""
         out = []
         metadata = self.elem.find("oai:metadata/mods:mods", namespaces=namespaces)
-        if len(metadata):
-            if metadata.xpath(self.args.xpath, namespaces=namespaces):
-                for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
-                    if value.text:
-                        out.append(value.text.encode("utf-8").strip())
-            if len(out) == 0:
-                out = None
-            self.elements = out
-            return self.elements
+        if metadata is not None:
+            if len(metadata):
+                if metadata.xpath(self.args.xpath, namespaces=namespaces):
+                    for value in metadata.xpath(self.args.xpath, namespaces=namespaces):
+                        if value.text:
+                            out.append(value.text.encode("utf-8").strip())
+                if len(out) == 0:
+                    out = None
+                self.elements = out
+                return self.elements
 
     def get_stats(self):
         """Get the field presence stats for the default report."""
@@ -178,12 +179,12 @@ def calc_completeness(stats_averages):
             #gather dpla completeness
             if element in dpla:
                 dpla_total += element_completeness_percent
-    
+
     if int(collection_field_to_count) > 0:
         completeness["collection_completeness"] = collection_total / float(collection_field_to_count)
     else:
         completeness["collection_completeness"] = 0
-    if int(len(wwww)) > 0:   
+    if int(len(wwww)) > 0:
         completeness["wwww_completeness"] = wwww_total / float(len(wwww))
     else:
         completeness["wwwe_completeness"] = 0
