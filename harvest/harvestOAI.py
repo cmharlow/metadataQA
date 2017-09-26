@@ -186,7 +186,8 @@ def main():
 
     # build the request element from passed args
     request_element = """<request verb="ListRecords" """
-    request_element += """set=\"""" + args.setName + """\" """
+    if args.setName:
+        request_element += """set=\"""" + args.setName + """\" """
     request_element += """metadataPrefix=\"""" + args.mdprefix + """\">"""
     request_element += args.link + "</request><ListRecords>"
 
