@@ -173,12 +173,13 @@ def main():
     ofile = codecs.lookup('utf-8')[-1](open(args.fname, 'wb'))
 
     # grab the value of responseDate element and append to oaistart
-    responseDateElm = re.search(
+    responseDateValue = re.search(
         b'<responseDate>(.*)</responseDate>', remoteData)
-    responseDate = responseDateElm.group(1)
-    oaistart += "<responseDate>"
-    oaistart += responseDate
-    oaistart += "</responseDate>\n"
+    if responseDateValue:
+        responseDate = responseDateElm.group(1)
+        oaistart += "<responseDate>"
+        oaistart += responseDate
+        oaistart += "</responseDate>\n"
 
     # write it to file
     ofile.write(oaistart)
