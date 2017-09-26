@@ -149,7 +149,7 @@ def main():
                         help="harvest the specified OAI-PMH set")
     args = parser.parse_args()
 
-    oaistart = """<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"><responseDate>"""
+    oaistart = """<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">"""
     oaiend = """\n</ListRecords></OAI-PMH>\n"""
 
 # Check OAI-PMH URL is valid
@@ -176,8 +176,9 @@ def main():
     responseDateElm = re.search(
         b'<responseDate>(.*)</responseDate>', remoteData)
     responseDate = responseDateElm.group(1)
+    oaistart += "<responseDate>"
     oaistart += responseDate
-    oaistart += """</responseDate>\n"""
+    oaistart += "</responseDate>\n"
 
     # write it to file
     ofile.write(oaistart)
