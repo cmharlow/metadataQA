@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Harvest Metadata from an OAI-PMH Feed."""
 from __future__ import unicode_literals
 import requests
@@ -12,8 +13,6 @@ from builtins import chr
 
 nDataBytes = 0
 nRawBytes = 0
-oaistart = """<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"> <responseDate>2015-10-11T00:35:52Z</responseDate> <ListRecords>\n"""
-oaiend = """\n</ListRecords></OAI-PMH>\n"""
 
 
 def getFile(link, command, sleepTime=0):
@@ -33,7 +32,8 @@ def getFile(link, command, sleepTime=0):
             print("%s redirected to %s ." % remoteAddr, resp.url)
             return(getFile(resp.url, command))
         elif '/xml' not in resp.headers.get('content-type'):
-            print("ERROR: content-type=%s" % (resp.headers.get('content-type')))
+            print("ERROR: content-type=%s" %
+                  (resp.headers.get('content-type')))
             exit()
         else:
             remoteData = resp.text
@@ -107,7 +107,8 @@ def handleEncodingErrors(inputFile):
 def writeHarvest(link, data, ofile):
     recordCount = 0
     while data:
-        # I need a better way to handle python 2/3 interop here, but not finding it.
+        # I need a better way to handle python 2/3 interop here, but not
+        # finding it.
         try:
             events = xml.dom.pulldom.parseString(data.encode('utf-8'))
             for (event, node) in events:
@@ -115,7 +116,7 @@ def writeHarvest(link, data, ofile):
                     events.expandNode(node)
                     node.writexml(ofile)
                     recordCount += 1
-        except TypeError as e:
+        except TypeError:
             events = xml.dom.pulldom.parseString(data)
             for (event, node) in events:
                 if event == "START_ELEMENT" and node.tagName == 'record':
@@ -126,7 +127,8 @@ def writeHarvest(link, data, ofile):
         if not more:
             break
         else:
-            data = getFile(link, "ListRecords&resumptionToken=%s" % more.group(1))
+            data = getFile(link, "ListRecords&resumptionToken=%s" %
+                           more.group(1))
             data = handleEncodingErrors(data)
     return(recordCount)
 
@@ -134,7 +136,7 @@ def writeHarvest(link, data, ofile):
 def main():
     parser = ArgumentParser()
     parser.add_argument("-l", "--link", dest="link", help="OAI-PMH URL",
-                        default="https://ecommons.cornell.edu/dspace-oai/request")
+                        default="http://repox.metro.org:8080/repox/OAIHandler")
     parser.add_argument("-o", "--filename", dest="fname",
                         help="write repository to file", default="harvest.xml")
     parser.add_argument("-f", "--from", dest="fromDate",
@@ -147,7 +149,10 @@ def main():
                         help="harvest the specified OAI-PMH set")
     args = parser.parse_args()
 
-    # Check OAI-PMH URL is valid
+    oaistart = """<?xml version="1.0" encoding="UTF-8"?><OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"><responseDate>"""
+    oaiend = """\n</ListRecords></OAI-PMH>\n"""
+
+# Check OAI-PMH URL is valid
     if not args.link.startswith('http'):
         args.link = 'http://' + args.link
 
@@ -158,15 +163,33 @@ def main():
     verbOpts = generateOAIopts(args)
     print("Using url:%s" % args.link + '?verb=ListRecords' + verbOpts)
 
-    # Create Start of XML Output File
-    ofile = codecs.lookup('utf-8')[-1](open(args.fname, 'wb'))
-    ofile.write(oaistart)
-
     # Grab & Clean XML Records from OAI Feed
     remoteData = getFile(args.link, 'ListRecords' + verbOpts)
     data = zipRemoteData(remoteData)
     data = checkOAIErrors(data)
     dataClean = handleEncodingErrors(data)
+
+    # Create Start of XML Output File
+    ofile = codecs.lookup('utf-8')[-1](open(args.fname, 'wb'))
+
+    # grab the value of responseDate element and append to oaistart
+    responseDateElm = re.search(
+        b'<responseDate>(.*)</responseDate>', remoteData)
+    responseDate = responseDateElm.group(1)
+    oaistart += responseDate
+    oaistart += """</responseDate>\n"""
+
+    # write it to file
+    ofile.write(oaistart)
+
+    # build the request element from passed args
+    request_element = """<request verb="ListRecords" """
+    request_element += """set=\"""" + args.setName + """\" """
+    request_element += """metadataPrefix=\"""" + args.mdprefix + """\">"""
+    request_element += args.link + "</request><ListRecords>"
+
+    # write it to file
+    ofile.write(request_element)
 
     # Iterate over Records, ResumptionTokens, & Write to File
     recordCount = writeHarvest(args.link, dataClean, ofile)
@@ -176,7 +199,8 @@ def main():
     ofile.close()
 
     # Print Simple Reports from Harvest
-    print("\nRead %d bytes (%.2f compression)" % (nDataBytes, float(nDataBytes) / nRawBytes))
+    print("\nRead %d bytes (%.2f compression)" %
+          (nDataBytes, float(nDataBytes) / nRawBytes))
     print("Wrote out %d records" % recordCount)
 
 
