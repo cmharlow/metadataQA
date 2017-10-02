@@ -176,7 +176,7 @@ def main():
     responseDateValue = re.search(
         b'<responseDate>(.*)</responseDate>', remoteData)
     if responseDateValue:
-        responseDate = responseDateElm.group(1)
+        responseDate = responseDateValue.group(1)
         oaistart += "<responseDate>"
         oaistart += responseDate
         oaistart += "</responseDate>\n"
