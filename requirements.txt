@@ -1,7 +1,7 @@
 appdirs==1.4.3
 future==0.16.0
 lxml==4.1.0
-objectpath==0.5
+objectpath==0.6.1
 packaging==16.8
 pyparsing==2.2.0
 pyspark==2.1.1+hadoop2.7
