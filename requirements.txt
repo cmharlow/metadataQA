@@ -1,4 +1,4 @@
-appdirs==1.4.3
+appdirs==1.4.4
 future==0.16.0
 lxml==4.1.0
 objectpath==0.5
