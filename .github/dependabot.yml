@@ -1,0 +1,15 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: packaging
+    versions:
+    - "20.8"
+  - dependency-name: lxml
+    versions:
+    - 4.6.2
