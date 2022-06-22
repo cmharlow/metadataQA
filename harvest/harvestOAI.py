@@ -136,7 +136,7 @@ def writeHarvest(link, data, ofile):
 def main():
     parser = ArgumentParser()
     parser.add_argument("-l", "--link", dest="link", help="OAI-PMH URL",
-                        default="http://repox.metro.org:8080/repox/OAIHandler")
+                        default="http://opac.cjh.org:8991/OAI")
     parser.add_argument("-o", "--filename", dest="fname",
                         help="write repository to file", default="harvest.xml")
     parser.add_argument("-f", "--from", dest="fromDate",
@@ -178,7 +178,7 @@ def main():
     if responseDateValue:
         responseDate = responseDateValue.group(1)
         oaistart += "<responseDate>"
-        oaistart += responseDate
+        oaistart += responseDate.decode('utf-8')
         oaistart += "</responseDate>\n"
 
     # write it to file
