@@ -37,7 +37,8 @@ class Record:
             record_id = header.find("%sidentifier" % OAI_NS).text
             return record_id
         except:
-            raise RepoInvestigatorException("Record does not have a valid Record Identifier. Check the structure of the Harvested XML (does it have a OAI header? Are the namespaces correct?) and the XML path used here to get to the identifier.")
+            raise RepoInvestigatorException(
+                "Record does not have a valid Record Identifier. Check the structure of the Harvested XML (does it have a OAI header? Are the namespaces correct?) and the XML path used here to get to the identifier.")
 
     def get_record_status(self):
         """Get only 'active' status OAI-PMH records."""
@@ -59,7 +60,8 @@ class Record:
     def get_xpath(self):
         """Get all the values for a given nested MODS element/field."""
         out = []
-        metadata = self.elem.find("oai:metadata/mods:mods", namespaces=namespaces)
+        metadata = self.elem.find(
+            "oai:metadata/mods:mods", namespaces=namespaces)
         if metadata is not None:
             if len(metadata):
                 if metadata.xpath(self.args.xpath, namespaces=namespaces):
@@ -76,12 +78,15 @@ class Record:
         stats = {}
         metadata = self.elem.find("%smetadata/%smods" % (OAI_NS, MODS_NS))
         mods = etree.ElementTree(metadata)
-        if len(metadata):
-            for desc in metadata.iterdescendants():
-                if len(desc) == 0 and desc.text:
-                    # ignore empties, does NOT have children elements
-                    stats.setdefault(re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NS, 'mods:')), 0)
-                    stats[re.sub('\[\d+\]','', mods.getelementpath(desc).replace(MODS_NS, 'mods:'))] += 1
+        if metadata is not None:
+            if len(metadata):
+                for desc in metadata.iterdescendants():
+                    if len(desc) == 0 and desc.text:
+                        # ignore empties, does NOT have children elements
+                        stats.setdefault(
+                            re.sub('\[\d+\]', '', mods.getelementpath(desc).replace(MODS_NS, 'mods:')), 0)
+                        stats[re.sub(
+                            '\[\d+\]', '', mods.getelementpath(desc).replace(MODS_NS, 'mods:'))] += 1
         return stats
 
     def has_element(self):
@@ -130,10 +135,12 @@ def create_stats_averages(stats_aggregate):
         field_count = stats_aggregate["field_info"][field]["field_count"]
         field_count_total = stats_aggregate["field_info"][field]["field_count_total"]
 
-        field_count_total_average = (float(field_count_total) / float(stats_aggregate["record_count"]))
+        field_count_total_average = (
+            float(field_count_total) / float(stats_aggregate["record_count"]))
         stats_aggregate["field_info"][field]["field_count_total_average"] = field_count_total_average
 
-        field_count_element_average = (float(field_count_total) / float(field_count))
+        field_count_element_average = (
+            float(field_count_total) / float(field_count))
         stats_aggregate["field_info"][field]["field_count_element_average"] = field_count_element_average
 
     return stats_aggregate
@@ -164,24 +171,25 @@ def calc_completeness(stats_averages):
 
     populated_elements = len(stats_averages["field_info"])
     for element in sorted(stats_averages["field_info"]):
-            element_completeness_percent = 0
-            element_completeness_percent = ((stats_averages["field_info"][element]["field_count"]
-                                             / float(record_count)) * 100)
-            completeness_total += element_completeness_percent
+        element_completeness_percent = 0
+        element_completeness_percent = ((stats_averages["field_info"][element]["field_count"]
+                                         / float(record_count)) * 100)
+        completeness_total += element_completeness_percent
 
-            #gather collection completeness
-            if element_completeness_percent > 10:
-                collection_total += element_completeness_percent
-                collection_field_to_count += 1
-            #gather wwww completeness
-            if element in wwww:
-                wwww_total += element_completeness_percent
-            #gather dpla completeness
-            if element in dpla:
-                dpla_total += element_completeness_percent
+        # gather collection completeness
+        if element_completeness_percent > 10:
+            collection_total += element_completeness_percent
+            collection_field_to_count += 1
+        # gather wwww completeness
+        if element in wwww:
+            wwww_total += element_completeness_percent
+        # gather dpla completeness
+        if element in dpla:
+            dpla_total += element_completeness_percent
 
     if int(collection_field_to_count) > 0:
-        completeness["collection_completeness"] = collection_total / float(collection_field_to_count)
+        completeness["collection_completeness"] = collection_total / \
+            float(collection_field_to_count)
     else:
         completeness["collection_completeness"] = 0
     if int(len(wwww)) > 0:
@@ -201,7 +209,7 @@ def calc_completeness(stats_averages):
 def pretty_print_stats(stats_averages):
     """Method for generating the default field usage report."""
     record_count = stats_averages["record_count"]
-    #get header length
+    # get header length
     element_length = 0
     for element in stats_averages["field_info"]:
         if element_length < len(element):
@@ -209,16 +217,17 @@ def pretty_print_stats(stats_averages):
 
     print("\n\n")
     for element in sorted(stats_averages["field_info"]):
-        percent = (stats_averages["field_info"][element]["field_count"] / float(record_count)) * 100
+        percent = (stats_averages["field_info"][element]
+                   ["field_count"] / float(record_count)) * 100
         percentPrint = "=" * (int((percent) / 4))
         columnOne = " " * (element_length - len(element)) + element
         print("%s: |%-25s| %6s/%s | %3d%% " % (
-                    columnOne,
-                    percentPrint,
-                    stats_averages["field_info"][element]["field_count"],
-                    record_count,
-                    percent
-                ))
+            columnOne,
+            percentPrint,
+            stats_averages["field_info"][element]["field_count"],
+            record_count,
+            percent
+        ))
 
     print("\n")
     completeness = calc_completeness(stats_averages)
